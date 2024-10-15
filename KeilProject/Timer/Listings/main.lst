@@ -1,0 +1,135 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              10/16/2024 00:47:19 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.l
+                    -st) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #define MULTINUM 9
+   2          #define RIGHT 1
+   3          #define LEFT 0
+   4          unsigned char direction = 1;
+   5          
+   6          sfr P2 = 0xA0;
+   7          sfr P3 = 0xB0;
+   8          sbit KEY1 = P3^2;
+   9          sbit KEY2 = P3^3;
+  10          // 定时器寄存器
+  11          sfr TCON = 0x88;
+  12          sfr TMOD = 0x89;
+  13          sfr TL0  = 0x8A;
+  14          sfr TH0  = 0x8C;
+  15          unsigned char multi = MULTINUM;
+  16          sbit TF0 = TCON ^ 5;
+  17          sbit TR0 = TCON ^ 4;
+  18          // 中断寄存器
+  19          sfr IE = 0xA8;
+  20          sbit EA = IE^7;
+  21          sbit ET0 = IE^1;
+  22          sbit EX0 = IE^0;
+  23          sbit EX1 = IE^2;
+  24          sbit IE1 = TCON^3;
+  25          sbit IT1 = TCON^2;
+  26          sbit IE0 = TCON^1;
+  27          sbit IT0 = TCON^0;
+  28          
+  29          void Timer0_Init(){
+  30   1              // 定时寄存器配置
+  31   1              TMOD &= 0xF0; 
+  32   1              TMOD |= 0X01; //16位定时器, 不覆盖赋值方法
+  33   1              TF0 = 0;
+  34   1              TR0 = 1;
+  35   1              TL0 = 0xAF;
+  36   1              TH0 = 0x3C; // 50ms
+  37   1              // 中断寄存器配置
+  38   1              EA = 1;
+  39   1              ET0 = 1;
+  40   1      }
+  41          void ExternalInterrupt0_Init(){
+  42   1      
+  43   1              EA = 1;
+  44   1              EX0 = 1;
+  45   1              IT0 = 1; //下降沿触发
+  46   1              IE0 = 0;
+  47   1      }
+  48          
+  49          void ExternalInterrupt1_Init(){
+  50   1              EA = 1;
+  51   1              EX1 = 1;
+  52   1              IT1 = 1; //下降沿触发
+  53   1              IE1 = 0;
+  54   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              10/16/2024 00:47:19 PAGE 2   
+
+  55          void main(){
+  56   1              P2 = 0xFE;
+  57   1              Timer0_Init();
+  58   1              ExternalInterrupt0_Init();
+  59   1              ExternalInterrupt1_Init();
+  60   1              while(1){
+  61   2      
+  62   2              }
+  63   1              
+  64   1      }
+  65          
+  66          
+  67          void Timer0_Routine() interrupt 1{
+  68   1              if(multi) {multi--;return;}
+  69   1              if(direction == RIGHT){
+  70   2                      if(P2 == 0x7F)P2 = 0xFE;
+  71   2                      else{
+  72   3                              unsigned char tmp;
+  73   3                              tmp = ~P2;
+  74   3                              tmp = tmp << 1;
+  75   3                              P2 = ~tmp;
+  76   3                      }
+  77   2              }
+  78   1              if(direction == LEFT){
+  79   2                      if(P2 == 0xFE) P2 = 0x7F;
+  80   2                      else{
+  81   3                              unsigned char tmp;
+  82   3                              tmp = ~P2;
+  83   3                              tmp = tmp >> 1;
+  84   3                              P2 = ~tmp;
+  85   3                      }
+  86   2              
+  87   2              }
+  88   1              TL0 = 0xAF;
+  89   1              TH0 = 0x3C; // 50ms
+  90   1              multi = MULTINUM;
+  91   1              return;
+  92   1      }
+  93                  
+  94                          
+  95          
+  96          
+  97          void Int0_Routine()interrupt 0{
+  98   1                      direction = LEFT;
+  99   1      }
+ 100                  
+ 101          void Int1_Routine()interrupt 2{
+ 102   1                      direction = RIGHT;
+ 103   1      }
+ 104          
+ 105                  
+ 106          
+ 107          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    140    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       1
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   MAIN                                                              10/16/2024 00:47:19 PAGE 3   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
